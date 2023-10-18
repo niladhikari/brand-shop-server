@@ -1,19 +1,16 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// middlewares
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-//brandShop
-//hlztDDmDc5TH7EhI
-
-const uri =
-  "mongodb+srv://brandShop:hlztDDmDc5TH7EhI@cluster0.fcmyfrv.mongodb.net/?retryWrites=true&w=majority";
+// MongoDB connection URI
+const uri = "mongodb+srv://brandShop:hlztDDmDc5TH7EhI@cluster0.fcmyfrv.mongodb.net/?retryWrites=true&w=majority";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -21,40 +18,48 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  },
+  }
 });
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+    // Connect the client to the server (optional starting in v4.7)
     await client.connect();
 
     const brandCollection = client.db("brandDB").collection("brands");
     const productCollection = client.db("brandDB").collection("products");
-    //for the brands data post
+
+    // POST request to add a brand
     app.post("/brand", async (req, res) => {
       const user = req.body;
-      console.log(user);
       const result = await brandCollection.insertOne(user);
       res.send(result);
     });
-    //for the brands data get
+
+    // GET request to retrieve a list of brands
     app.get("/brand", async (req, res) => {
       const cursor = brandCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
 
-    // this for the product post get put sections
-    //for the product data post
+    // GET request to retrieve products for a specific brand by brand ID
+    app.get("/brand/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const brandNameFromData = await brandCollection.findOne(filter);
+      const result = await productCollection.find({ brandName: brandNameFromData.brandName }).toArray();
+      res.send(result);
+    });
+
+    // POST request to add a product
     app.post("/product", async (req, res) => {
       const user = req.body;
-      console.log(user);
       const result = await productCollection.insertOne(user);
       res.send(result);
     });
 
-    //for the brands data get
+    // GET request to retrieve a list of products
     app.get("/product", async (req, res) => {
       const cursor = productCollection.find();
       const result = await cursor.toArray();
@@ -63,19 +68,14 @@ async function run() {
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
-    // Ensures that the client will close when you finish/error
+    // Ensure that the client will close when you finish/error
     // await client.close();
   }
 }
-run().catch(console.dir);
 
-app.get("/", (req, res) => {
-  res.send("Crud is running ....");
-});
+run().catch(console.error);
 
 app.listen(port, () => {
   console.log(`App is running on port ${port}`);
