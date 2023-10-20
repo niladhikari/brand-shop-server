@@ -30,21 +30,31 @@ async function run() {
     const brandCollection = client.db("brandDB").collection("brands");
     const productCollection = client.db("brandDB").collection("products");
     const userCollection = client.db("brandDB").collection("users");
-    const myCardCollection = client.db("brandDB").collection("card");
+    const cardCollection = client.db("brandDB").collection("allAddProducts");
 
     //
     app.post("/cards", async (req, res) => {
       const product = req.body;
-      const result = await myCardCollection.insertOne(product);
+      const result = await cardCollection.insertOne(product);
       res.send(result);
     });
 
     app.get("/cards/:email", async (req, res) => {
       const email = req.params.email;
       console.log(email);
-      const result = await myCardCollection.find({email: email}).toArray();
+      const result = await cardCollection.find({email: email}).toArray();
       res.send(result);
     });
+
+    app.delete("/cards/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await cardCollection.deleteOne(query);
+      console.log(result);
+      res.send(result);
+    });
+    
 
     
     
