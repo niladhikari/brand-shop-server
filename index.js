@@ -10,8 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB connection URI
-const uri =
-  "mongodb+srv://brandShop:hlztDDmDc5TH7EhI@cluster0.fcmyfrv.mongodb.net/?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.fcmyfrv.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -54,9 +53,6 @@ async function run() {
       console.log(result);
       res.send(result);
     });
-    
-
-    
     
 
     // POST request to add a brand
@@ -151,6 +147,10 @@ async function run() {
 }
 
 run().catch(console.error);
+
+app.get("/", (req, res) => {
+  res.send("Coffee making server is running");
+});
 
 app.listen(port, () => {
   console.log(`App is running on port ${port}`);
